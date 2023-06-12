@@ -15,6 +15,8 @@ class App extends Component {
         { name: 'Alex', salary: 3000, id: 2, like: false, increase: true },
         { name: 'Nigga', salary: 5000, id: 3, like: false, increase: false },
       ],
+      term: '',
+      filter: 'all',
     };
     this.maxId = 4;
   }
@@ -34,7 +36,7 @@ class App extends Component {
       like: false,
       id: this.maxId++,
     };
-    
+
     this.setState(({ data }) => {
       const newArr = [...data, newItem];
       return {
@@ -44,7 +46,7 @@ class App extends Component {
   };
 
   onToggleProp = (id, prop) => {
-    console.log(prop)
+    console.log(prop);
     // this.setState(({ data }) => {
     //   const index = data.findIndex(elem => elem.id === id);
     //   const old = data[index];
@@ -68,19 +70,48 @@ class App extends Component {
     }));
   };
 
+  searchEmp = (items, term) => {
+    if (term.length === 0) {
+      return items;
+    }
+
+    return items.filter(item => {
+      return item.name.indexOf(term) > -1;
+    });
+  };
+  onUpdateSearch = term => {
+    this.setState({ term });
+  };
+  filterPost = (items, filter) => {
+    switch (filter) {
+      case 'increase':
+        return items.filter(item => item.increase);
+      case 'salary':
+        return items.filter(item => item.salary > 1000);
+      default:
+        return items;
+    }
+  };
+  onFilterSelect = filter => {
+    this.setState({ filter });
+  };
+
   render() {
+    const { data, term, filter } = this.state;
     const employees = this.state.data.length;
     const increased = this.state.data.filter(item => item.increase).length;
+    const visibleData = this.filterPost(this.searchEmp(data, term), filter);
+    // console.log(data);
     return (
       <div className='App'>
         <AppInfo employees={employees} increased={increased} />
         <div className='search-panel'>
-          <SearchPanel />
-          <AppFilter />
+          <SearchPanel onUpdateSearch={this.onUpdateSearch} />
+          <AppFilter filter={filter} onFilterSelect={this.onFilterSelect}/>
         </div>
 
         <EmployeesList
-          data={this.state.data}
+          data={visibleData}
           onDelete={this.deleteItem}
           onToggleProp={this.onToggleProp}
         />
